@@ -1,0 +1,35 @@
+name: Daily UIT Deadline Sync
+
+on:
+  schedule:
+    # GitHub: UTC. VN: UTC+7. 
+    # 8PM (20:00 VN) minus 7 hours = 13:00 UTC.
+    - cron: '0 13 * * *' 
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull code to VM
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (npm install)
+        run: npm install
+
+      - name: Install hidden browser for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Runnign Bot to crawl data
+        env:
+          UIT_USERNAME: ${{ secrets.UIT_USERNAME }}
+          UIT_PASSWORD: ${{ secrets.UIT_PASSWORD }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: node index.js
